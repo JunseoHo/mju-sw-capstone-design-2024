@@ -19,7 +19,7 @@ checkpoints_dir = '../checkpoints'
 
 model_name = 'yolo_nas_s'
 
-epochs = 1
+epochs = 30
 batch_size = 16
 num_workers = 8
 

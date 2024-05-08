@@ -15,3 +15,5 @@ out = model.predict('sample.jpg')
 
 image = out.image  # YOLONAS에 입력된 이미지 픽셀 값
 bboxes = out.prediction.bboxes_xyxy  # YOLONAS에서 예측된 바운딩 박스 값
+
+print(bboxes)

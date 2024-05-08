@@ -20,6 +20,4 @@ test_images = os.listdir(test_imgs_dir)
 for test_image in tqdm(test_images, total=len(test_images)):
     test_image_path = os.path.join(test_imgs_dir, test_image)
     out = model.predict(test_image_path)
-    print(out.image)
-    print(out.prediction.bboxes_xyxy)
     out.save(os.path.join('../inference_results/', test_image))
