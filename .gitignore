@@ -6,3 +6,4 @@
 **/dataset/*
 **/checkpoints/*
 **/__pycache__/*
+**/inference_results/*
