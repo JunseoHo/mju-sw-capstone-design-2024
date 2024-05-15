@@ -2,7 +2,7 @@ import tensorflow as tf
 from keras.src.callbacks import ModelCheckpoint
 from tensorflow.keras.callbacks import *
 import tensorflow_datasets as tfds
-
+import matplotlib.pyplot as plt  # 데이터 시각화 라이브러리
 from trainer.unetpp.scripts.unetpp import unetpp
 
 # Constants
@@ -10,7 +10,7 @@ optimizer = 'adam'
 loss = 'sparse_categorical_crossentropy'
 metrics = ['accuracy']
 checkpoint_path = "unetpp_ckpt.weights.h5"
-epochs = 30
+epochs = 3
 
 # Load data from tensorflow datasets
 dataset, info = tfds.load('oxford_iiit_pet:3.*.*', with_info=True)
@@ -35,34 +35,36 @@ def load_image(datapoint):
 
     return input_image, input_mask
 
-
-train_length = info.splits['train'].num_examples
 batch_size = 64
-buffer_size = 1000
-steps_for_epoch = train_length // batch_size
-
-train_images = dataset['train'].map(load_image, num_parallel_calls=tf.data.AUTOTUNE)
 test_images = dataset['test'].map(load_image, num_parallel_calls=tf.data.AUTOTUNE)
 
-train_batches = (
-    train_images
-    .cache()
-    .shuffle(buffer_size)
-    .batch(batch_size)
-    .repeat()
-    .prefetch(buffer_size=tf.data.AUTOTUNE))
+dataset = test_images.batch(batch_size)
 
-test_batches = test_images.batch(batch_size)
+model.load_weights('unetpp_ckpt.weights.h5')
 
-VAL_SUBSPLITS = 5
-VALIDATION_STEPS = info.splits['test'].num_examples // batch_size // VAL_SUBSPLITS
-model.fit(train_batches, epochs=epochs,
-          steps_per_epoch=steps_for_epoch,
-          validation_steps=VALIDATION_STEPS,
-          validation_data=test_batches,
-          callbacks=ModelCheckpoint(filepath=checkpoint_path, save_weights_only=True, save_best_only=True))
+def display(display_list):
+    plt.figure(figsize=(15, 15))
 
-# save model weights
-model.load_weights(checkpoint_path)
-export_path = "export.h5"
-model.save(export_path)
+    title = ['Input Image', 'True Mask', 'Predicted Mask']
+
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i + 1)
+        plt.title(title[i])
+        plt.imshow(tf.keras.utils.array_to_img(display_list[i]))
+        plt.axis('off')
+    plt.show()
+
+def create_mask(pred_mask):
+    pred_mask = tf.math.argmax(pred_mask, axis=-1)
+    pred_mask = pred_mask[..., tf.newaxis]
+    return pred_mask[0]
+
+if model is None:
+    print("Model is not provided.")
+if dataset:
+    for image, mask in dataset.take(3):
+        pred_mask = model.predict(image)
+        display([image[0], mask[0], create_mask(pred_mask)])
+else:
+    print('No dataset provided')
+
