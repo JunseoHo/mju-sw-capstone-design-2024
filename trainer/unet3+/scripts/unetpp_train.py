@@ -1,23 +1,19 @@
-import tensorflow as tf
-from keras.src.callbacks import ModelCheckpoint
 from tensorflow.keras.callbacks import *
 import tensorflow_datasets as tfds
-
-from trainer.unetpp.scripts.unetpp import unetpp
+from unet3plus import *
 
 # Constants
+input_shape = (128, 128, 3)
+num_classes = 3
 optimizer = 'adam'
 loss = 'sparse_categorical_crossentropy'
 metrics = ['accuracy']
 checkpoint_path = "unetpp_ckpt.weights.h5"
-epochs = 30
+epochs = 3
 
-# Load data from tensorflow datasets
-dataset, info = tfds.load('oxford_iiit_pet:3.*.*', with_info=True)
+dataset, info = tfds.load('coco', with_info=True)
 
-input_shape = (128, 128, 3)
-num_classes = 3
-model = unetpp(input_shape, num_classes)
+model = unet3plus(input_shape, num_classes)
 model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
 
