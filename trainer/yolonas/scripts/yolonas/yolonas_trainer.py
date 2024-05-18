@@ -19,7 +19,8 @@ checkpoints_dir = '../../checkpoints'
 
 model_name = 'yolo_nas_s'
 
-epochs = 1
+
+epochs = 30
 batch_size = 16
 num_workers = 8
 
@@ -120,7 +121,7 @@ if __name__ == '__main__':
         model_name,
         num_classes=len(classes),
         pretrained_weights="coco"
-    )
+    ).to(torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu"))
 
     trainer = Trainer(
         experiment_name=model_name,
