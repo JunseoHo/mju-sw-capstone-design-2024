@@ -1,12 +1,12 @@
-import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
 # https://github.com/nikhilroxtomar/UNET-3-plus-Implementation-in-TensorFlow-and-PyTorch/blob/main/tensorflow/1-unet3plus.py
 
-#8000F8
 
 import tensorflow as tf
 import tensorflow.keras.layers as L
+import os
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
 
 def conv_block(x, num_filters, act=True):
     x = L.Conv2D(num_filters, kernel_size=3, padding="same")(x)
@@ -17,12 +17,14 @@ def conv_block(x, num_filters, act=True):
 
     return x
 
+
 def encoder_block(x, num_filters):
     x = conv_block(x, num_filters)
     x = conv_block(x, num_filters)
 
     p = L.MaxPool2D((2, 2))(x)
     return x, p
+
 
 def unet3plus(input_shape, num_classes=1):
     """ Inputs """
@@ -54,9 +56,9 @@ def unet3plus(input_shape, num_classes=1):
     e5_d4 = conv_block(e5_d4, 64)
 
     d4 = L.Concatenate()([e1_d4, e2_d4, e3_d4, e4_d4, e5_d4])
-    d4 = conv_block(d4, 64*5)
+    d4 = conv_block(d4, 64 * 5)
 
-    """ Decoder 3 """ #8000F8
+    """ Decoder 3 """  # 8000F8
     e1_d3 = L.MaxPool2D((4, 4))(e1)
     e1_d3 = conv_block(e1_d3, 64)
 
@@ -72,7 +74,7 @@ def unet3plus(input_shape, num_classes=1):
     e5_d3 = conv_block(e5_d3, 64)
 
     d3 = L.Concatenate()([e1_d3, e2_d3, e3_d3, d4_d3, e5_d3])
-    d3 = conv_block(d3, 64*5)
+    d3 = conv_block(d3, 64 * 5)
 
     """ Decoder 2 """
     e1_d2 = L.MaxPool2D((2, 2))(e1)
@@ -90,7 +92,7 @@ def unet3plus(input_shape, num_classes=1):
     e5_d2 = conv_block(e5_d2, 64)
 
     d2 = L.Concatenate()([e1_d2, e2_d2, d3_d2, d4_d2, e5_d2])
-    d2 = conv_block(d2, 64*5)
+    d2 = conv_block(d2, 64 * 5)
 
     """ Decoder 1 """
     e1_d1 = conv_block(e1, 64)
@@ -108,7 +110,7 @@ def unet3plus(input_shape, num_classes=1):
     e5_d1 = conv_block(e5_d1, 64)
 
     d1 = L.Concatenate()([e1_d1, d2_d1, d3_d1, d4_d1, e5_d1])
-    d1 = conv_block(d1, 64*5)
+    d1 = conv_block(d1, 64 * 5)
 
     """ Output """
     y1 = L.Conv2D(num_classes, kernel_size=3, padding="same")(d1)
@@ -118,8 +120,3 @@ def unet3plus(input_shape, num_classes=1):
     model = tf.keras.Model(inputs, outputs)
     return model
 
-
-if __name__ == "__main__":
-    input_shape = (256, 256, 3)
-    model = unet3plus(input_shape)
-    model.summary()
