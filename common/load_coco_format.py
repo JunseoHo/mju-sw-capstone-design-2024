@@ -20,8 +20,8 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_count, valid_
     with open(json_name, 'w', encoding='utf-8') as f:
         json.dump(data, f)
     coco = COCO(json_name)
-    img_ids = coco.getImgIds()
-    cat_ids = coco.getCatIds()
+    img_ids = coco.getImgIds()[:10]
+    cat_ids = coco.getCatIds()[:10]
     images = []
     segmentation_masks = []
     for img_id in tqdm(img_ids, 'Loading COCO format dataset...'):
@@ -59,8 +59,8 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_count, valid_
     train_set = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
     valid_set = tf.data.Dataset.from_tensor_slices((valid_images, valid_masks))
 
-    train_batch_size = len(train_images) / train_batch_count
-    valid_batch_size = len(valid_images) / valid_batch_count
+    train_batch_size = int(len(train_images) / train_batch_count)
+    valid_batch_size = int(len(valid_images) / valid_batch_count)
 
     train_batches = (  # 훈련용 데이터 전처리는 이곳에서 수행합니다.
         train_set
