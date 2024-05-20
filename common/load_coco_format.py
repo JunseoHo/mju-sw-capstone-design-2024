@@ -12,7 +12,7 @@ import tensorflow as tf
 buffer_size = 2048
 
 
-def load_coco_format(image_dir, json_name, input_size, train_batch_count, valid_batch_count, train_rate):
+def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_batch_size, train_rate):
     if train_rate < 0.1 or train_rate > 1.0:
         raise Exception("Train rate must be between 0.1 and 1.0")
     with open(json_name, 'r', encoding='utf-8') as f:  # 인코딩 문제 해결을 위해 UTF-8로 다시 저장
@@ -20,8 +20,8 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_count, valid_
     with open(json_name, 'w', encoding='utf-8') as f:
         json.dump(data, f)
     coco = COCO(json_name)
-    img_ids = coco.getImgIds()[:10]
-    cat_ids = coco.getCatIds()[:10]
+    img_ids = coco.getImgIds()
+    cat_ids = coco.getCatIds()
     images = []
     segmentation_masks = []
     for img_id in tqdm(img_ids, 'Loading COCO format dataset...'):
@@ -51,16 +51,13 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_count, valid_
     total_image_count = len(images)
 
     train_images = images[:int(total_image_count * train_rate)]
-    train_masks = images[:int(total_image_count * train_rate)]
+    train_masks = segmentation_masks[:int(total_image_count * train_rate)]
 
     valid_images = images[int(total_image_count * train_rate):]
-    valid_masks = images[int(total_image_count * train_rate):]
+    valid_masks = segmentation_masks[int(total_image_count * train_rate):]
 
     train_set = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
     valid_set = tf.data.Dataset.from_tensor_slices((valid_images, valid_masks))
-
-    train_batch_size = int(len(train_images) / train_batch_count)
-    valid_batch_size = int(len(valid_images) / valid_batch_count)
 
     train_batches = (  # 훈련용 데이터 전처리는 이곳에서 수행합니다.
         train_set
