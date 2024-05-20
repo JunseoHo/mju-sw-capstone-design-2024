@@ -9,8 +9,8 @@ from tensorflow_datasets.core.features.image_feature import cv2
 import numpy as np
 
 h5_path = '../checkpoints/unet3plus_export.weights.h5'
-images_dir = '../dataset/images/'
-json_path = '../dataset/COCO_Football Pixel.json'
+images_dir = '../dataset_soccer/images/'
+json_path = '../dataset_soccer/COCO_Football Pixel.json'
 input_size = (128, 128)
 
 coco = COCO(json_path)
