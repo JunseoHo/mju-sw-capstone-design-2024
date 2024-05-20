@@ -20,7 +20,7 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_b
     with open(json_name, 'w', encoding='utf-8') as f:
         json.dump(data, f)
     coco = COCO(json_name)
-    img_ids = coco.getImgIds()
+    img_ids = coco.getImgIds()[:50]
     cat_ids = coco.getCatIds()
     images = []
     segmentation_masks = []

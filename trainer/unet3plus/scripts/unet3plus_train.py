@@ -17,7 +17,7 @@ epoch = 25  # 에폭의 횟수
 train_batch_size = 5  # 훈련용 데이터 미니배치당 크기 : OOM 발생 시 줄여주세요.
 valid_batch_size = 5  # 검증용 데이터 미니배치당 크기 : OOM 발생 시 줄여주세요.
 train_rate = 0.7  # 전체 데이터 세트에서 훈련용으로 사용할 비율.
-num_classes = 5  # 배경까지 포함한 개수여야 합니다.
+num_classes = 6  # 배경까지 포함한 개수여야 합니다.
 
 train_batches, valid_batches = load_coco_format(images_dir, json_path, input_size, train_batch_size, valid_batch_size,
                                                 train_rate)
@@ -32,8 +32,8 @@ model.compile(optimizer='adam',
 
 model.fit(train_batches,
           epochs=epoch,
-          # steps_per_epoch=(len(train_batches) // train_batch_size),
-          # validation_data=valid_batches,
-          # validation_steps=(len(valid_batches) // valid_batch_size),
+          steps_per_epoch=len(train_batches),
+          validation_data=valid_batches,
+          validation_steps=len(valid_batches),
           callbacks=ModelCheckpoint(filepath=checkpoint_path, save_weights_only=True, save_best_only=False))
 model.save(export_path)
