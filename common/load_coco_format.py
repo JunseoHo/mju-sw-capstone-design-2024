@@ -50,11 +50,11 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_count, valid_
 
     total_image_count = len(images)
 
-    train_images = images[:total_image_count * train_rate]
-    train_masks = images[:total_image_count * train_rate]
+    train_images = images[:int(total_image_count * train_rate)]
+    train_masks = images[:int(total_image_count * train_rate)]
 
-    valid_images = images[total_image_count * train_rate:]
-    valid_masks = images[total_image_count * train_rate:]
+    valid_images = images[int(total_image_count * train_rate):]
+    valid_masks = images[int(total_image_count * train_rate):]
 
     train_set = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
     valid_set = tf.data.Dataset.from_tensor_slices((valid_images, valid_masks))
