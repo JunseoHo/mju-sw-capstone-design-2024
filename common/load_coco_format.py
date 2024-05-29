@@ -1,9 +1,11 @@
 import json
 import os
+import random
 
+from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin")  # CUDA의 경로를 이곳에 입력
+# os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin")  # CUDA의 경로를 이곳에 입력
 import cv2
 from pycocotools.coco import COCO
 import numpy as np
@@ -12,7 +14,7 @@ import tensorflow as tf
 buffer_size = 2048
 
 
-def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_batch_size, train_rate):
+def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_batch_size, train_rate, valid_rate):
     if train_rate < 0.1 or train_rate > 1.0:
         raise Exception("Train rate must be between 0.1 and 1.0")
     with open(json_name, 'r', encoding='utf-8') as f:  # 인코딩 문제 해결을 위해 UTF-8로 다시 저장
@@ -20,7 +22,8 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_b
     with open(json_name, 'w', encoding='utf-8') as f:
         json.dump(data, f)
     coco = COCO(json_name)
-    img_ids = coco.getImgIds()[:50]
+    img_ids = coco.getImgIds()[:10]
+    random.shuffle(img_ids)
     cat_ids = coco.getCatIds()
     images = []
     segmentation_masks = []
@@ -40,6 +43,19 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_b
                 mask = cv2.resize(coco.annToMask(ann) * pixel_value, input_size)
                 segmentation_mask = np.maximum(segmentation_mask, mask).astype(np.int32)
         segmentation_mask = segmentation_mask.reshape(input_size[0], input_size[1], 1)
+        # Plot the mask
+        plt.figure(figsize=(10, 5))
+        plt.subplot(1, 2, 1)
+        plt.imshow(image)
+        plt.title("Image")
+        plt.axis('off')
+
+        plt.subplot(1, 2, 2)
+        plt.imshow(segmentation_mask.squeeze(), cmap='gray')
+        plt.title("Segmentation Mask")
+        plt.axis('off')
+
+        plt.show()
         segmentation_masks.append(segmentation_mask)
 
     images = np.array(images)
@@ -53,11 +69,15 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_b
     train_images = images[:int(total_image_count * train_rate)]
     train_masks = segmentation_masks[:int(total_image_count * train_rate)]
 
-    valid_images = images[int(total_image_count * train_rate):]
-    valid_masks = segmentation_masks[int(total_image_count * train_rate):]
+    valid_images = images[int(total_image_count * train_rate):int(total_image_count * (train_rate + valid_rate))]
+    valid_masks = segmentation_masks[int(total_image_count * train_rate):int(total_image_count * (train_rate + valid_rate))]
+
+    test_images = images[int(total_image_count * (train_rate + valid_rate)):]
+    test_masks = images[int(total_image_count * (train_rate + valid_rate)):]
 
     train_set = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
     valid_set = tf.data.Dataset.from_tensor_slices((valid_images, valid_masks))
+    test_set = tf.data.Dataset.from_tensor_slices((test_images, test_masks))
 
     train_batches = (  # 훈련용 데이터 전처리는 이곳에서 수행합니다.
         train_set
@@ -75,4 +95,4 @@ def load_coco_format(image_dir, json_name, input_size, train_batch_size, valid_b
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )
 
-    return train_batches, valid_batches
+    return train_batches, valid_batches, test_set

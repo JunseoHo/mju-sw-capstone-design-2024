@@ -3,19 +3,20 @@ import os
 from matplotlib import pyplot as plt
 from pycocotools.coco import COCO
 
-os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin")  # CUDA의 경로를 이곳에 입력
+# os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin")  # CUDA의 경로를 이곳에 입력
 import tensorflow as tf
-from tensorflow_datasets.core.features.image_feature import cv2
+import cv2
 import numpy as np
 
 h5_path = '../checkpoints/unet3plus_export.weights.h5'
-images_dir = '../dataset_soccer/images/'
-json_path = '../dataset_soccer/COCO_Football Pixel.json'
-input_size = (128, 128)
+images_dir = '../dataset/images/'
+json_path = '../dataset/annotations/instances_default.json'
+input_size = (512, 512)
 
 coco = COCO(json_path)
 images = []
-for img_id in coco.getImgIds():
+img_ids = coco.getImgIds()[:50]
+for img_id in img_ids:
     img = coco.loadImgs(img_id)[0]
     file_name = images_dir + img['file_name']
     image = cv2.cvtColor(cv2.imread(file_name), cv2.COLOR_BGR2RGB)
@@ -31,6 +32,7 @@ predictions = tf.keras.models.load_model(h5_path).predict(images)
 def mask_to_label(mask):
     labels = np.argmax(mask, axis=-1)
     return labels
+
 
 predicted_labels = mask_to_label(predictions)
 
