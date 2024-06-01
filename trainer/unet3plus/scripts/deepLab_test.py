@@ -8,10 +8,10 @@ import tensorflow as tf
 from tensorflow_datasets.core.features.image_feature import cv2
 import numpy as np
 
-h5_path = '../checkpoints/unet3plus_export.weights.h5'
-images_dir = '../data/champions_league/dataset_soccer/images/'
-json_path = '../data/champions_league/dataset_soccer/COCO_Football Pixel.json'
-input_size = (128, 128)
+h5_path = '../checkpoints/PoledeeplabV3plus_export.weights.h5'
+images_dir = '../data/champions_league/dataset_pole/images/'
+json_path = '../data/champions_league/dataset_pole/instances_default.json'
+input_size = (512, 512)
 
 coco = COCO(json_path)
 images = []

@@ -3,7 +3,7 @@ import os
 
 from tqdm import tqdm
 
-os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin")  # CUDA의 경로를 이곳에 입력
+os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0")  # CUDA의 경로를 이곳에 입력
 import cv2
 from pycocotools.coco import COCO
 import numpy as np
