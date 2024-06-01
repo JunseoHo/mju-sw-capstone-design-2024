@@ -3,7 +3,7 @@ from tqdm.auto import tqdm
 import torch
 import os
 
-test_imgs_dir = '../../dataset/test/images/'
+test_imgs_dir = '../../train_dataset/test/images/'
 test_imgs = os.listdir(test_imgs_dir)
 
 model_name = 'yolo_nas_s'

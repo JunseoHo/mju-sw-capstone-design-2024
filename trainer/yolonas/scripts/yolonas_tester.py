@@ -14,7 +14,7 @@ model = models.get(
     num_classes=len(classes)
 ).to(torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu"))
 
-test_imgs_dir = '../dataset/test/images/'
+test_imgs_dir = '../train_dataset/test/images/'
 test_images = os.listdir(test_imgs_dir)
 
 for test_image in tqdm(test_images, total=len(test_images)):

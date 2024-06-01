@@ -7,7 +7,7 @@ from super_gradients.training.losses import PPYoloELoss
 from super_gradients.training.metrics import *
 from super_gradients.training.models.detection_models.pp_yolo_e import *
 
-data_dir = '../../dataset'
+data_dir = '../../train_dataset'
 train_imgs_dir = 'train/images'
 train_lbls_dir = 'train/labels'
 valid_imgs_dir = 'valid/images'
