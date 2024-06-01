@@ -4,6 +4,9 @@
 .vs/*
 
 **/dataset/*
+**/train_dataset/*
+**/test_dataset/*
+**/split_dataset/*
 **/checkpoints/*
 **/__pycache__/*
 **/data/*

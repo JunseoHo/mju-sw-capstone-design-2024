@@ -7,26 +7,19 @@ from super_gradients.training.losses import PPYoloELoss
 from super_gradients.training.metrics import *
 from super_gradients.training.models.detection_models.pp_yolo_e import *
 
-data_dir = '../../dataset'
-train_imgs_dir = 'train/images'
-train_lbls_dir = 'train/labels'
-valid_imgs_dir = 'valid/images'
-valid_lbls_dir = 'valid/labels'
-test_imgs_dir = 'test/images'
-test_lbls_dir = 'test/labels'
-classes = ['head', 'helmet']
-checkpoints_dir = '../../checkpoints'
-
+data_dir = '../split_dataset/'
+train_imgs_dir = 'images/train'
+train_lbls_dir = 'labels/train'
+valid_imgs_dir = 'images/valid'
+valid_lbls_dir = 'labels/valid'
+classes = ['sp', 'cn', 'la', 'tr', 'lp']
+checkpoints_dir = '../checkpoints'
 model_name = 'yolo_nas_s'
-
-
 epochs = 30
 batch_size = 16
 num_workers = 8
-
 optimizer = "ADAM"
 optimizer_params = {"weight_decay": 0.0001}
-
 warmup_mode = "LinearEpochLRWarmup"
 warmup_initial_lr = 1e-6
 lr_warmup_epochs = 3
@@ -69,6 +62,7 @@ loss_function = PPYoloELoss(
 
 if __name__ == '__main__':
     os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+    os.environ['NUMEXPR_MAX_THREADS'] = '8'
     torch.multiprocessing.freeze_support()  # 윈도우 시스템의 재귀 Fork 시스템콜을 방지.
     train_data_loader = coco_detection_yolo_format_train(
         dataset_params={
