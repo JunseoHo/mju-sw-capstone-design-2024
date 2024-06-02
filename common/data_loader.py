@@ -1,5 +1,8 @@
 import os
 
+from keras.layers import RandomFlip, RandomRotation, RandomZoom
+from matplotlib import pyplot as plt
+
 os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin")  # CUDA의 경로를 이곳에 입력
 
 import json
@@ -16,6 +19,7 @@ def save_as_unicode(file_name):
         data = json.load(f)
     with open(file_name, 'w', encoding='utf-8') as f:
         json.dump(data, f)
+
 
 def load_instances_coco_format_all(image_dir, json_name, input_size,
                                    cat_id, num_of_image=None, shuffle=True, margin=200):
@@ -50,7 +54,7 @@ def load_instances_coco_format_all(image_dir, json_name, input_size,
 
 
 def load_instances_coco_format(image_dir, json_name, input_size, train_batch_size, valid_batch_size, train_rate,
-                               cat_id, num_of_image=None, shuffle=True, margin=200):
+                               cat_id, num_of_image=None, shuffle=True, margin=(500, 800)):
     save_as_unicode(json_name)
     coco = COCO(json_name)
     img_ids = coco.getImgIds()
@@ -70,14 +74,19 @@ def load_instances_coco_format(image_dir, json_name, input_size, train_batch_siz
         for ann in anns:
             if cat_id is not None and (cat_ids.index(ann['category_id']) + 1) != cat_id:
                 continue
-            x1, y1, w, h = map(int, ann['bbox'])
-            x2, y2 = x1 + w, y1 + h
-            x1 = max(x1 - margin, 0)
-            y1 = max(y1 - margin, 0)
-            x2 = min(x2 + margin, image.shape[1])
-            y2 = min(y2 + margin, image.shape[0])
-            instance_images.append(cv2.resize(image[y1:y2, x1:x2], input_size))
-            instance_masks.append(cv2.resize(coco.annToMask(ann)[y1:y2, x1:x2], input_size))
+            for left_margin in range(2):
+                for top_margin in range(2):
+                    right_margin = 1 if left_margin == 0 else 0
+                    bottom_margin = 1 if top_margin == 0 else 0
+                    x1, y1, w, h = map(int, ann['bbox'])
+                    x2, y2 = x1 + w, y1 + h
+                    x1 = max(x1 - margin[left_margin], 0)
+                    y1 = max(y1 - margin[top_margin], 0)
+                    x2 = min(x2 + margin[right_margin], image.shape[1])
+                    y2 = min(y2 + margin[bottom_margin], image.shape[0])
+                    instance_images.append(cv2.resize(image[y1:y2, x1:x2], input_size))
+                    instance_masks.append(cv2.resize(coco.annToMask(ann)[y1:y2, x1:x2], input_size))
+
 
     instance_images = np.array(instance_images)
     instance_masks = np.array(instance_masks)
@@ -93,11 +102,31 @@ def load_instances_coco_format(image_dir, json_name, input_size, train_batch_siz
     train_set = tf.data.Dataset.from_tensor_slices((train_images, train_masks))
     valid_set = tf.data.Dataset.from_tensor_slices((valid_images, valid_masks))
 
+    def augment_image_and_mask(image, mask):
+        # 임의로 이미지를 좌우로 뒤집기
+        if tf.random.uniform(()) > 0.5:
+            image = tf.image.flip_left_right(image)
+            mask = tf.image.flip_left_right(mask)
+
+        # 임의로 이미지를 위아래로 뒤집기
+        if tf.random.uniform(()) > 0.5:
+            image = tf.image.flip_up_down(image)
+            mask = tf.image.flip_up_down(mask)
+
+        # 임의로 이미지를 밝게 만들기
+        image = tf.image.random_brightness(image, max_delta=0.1)
+
+        # 필요에 따라 더 많은 증강을 추가할 수 있습니다
+
+        return image, mask
+
     train_batches = (  # 훈련용 데이터 전처리는 이곳에서 수행합니다.
         train_set
         .cache()
         .shuffle(len(train_images) * 2)
+        .repeat(2)
         .batch(train_batch_size)
+        .map(lambda x, y: augment_image_and_mask(x, y))
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )
 
@@ -106,6 +135,7 @@ def load_instances_coco_format(image_dir, json_name, input_size, train_batch_siz
         .cache()
         .shuffle(len(valid_images) * 2)
         .batch(valid_batch_size)
+        .map(lambda x, y: augment_image_and_mask(x, y))
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )
 
