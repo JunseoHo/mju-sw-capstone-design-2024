@@ -93,7 +93,7 @@ def AtrousSpatialPyramidPooling(channel):
   results = tf.keras.layers.ReLU()(results);
   return tf.keras.Model(inputs = inputs, outputs = results);
 
-def DeeplabV3Plus(input_size,nclasses = None):
+def DeeplabV3Plus(input_size,nclasses):
 
   assert type(nclasses) is int;
   inputs = tf.keras.Input(input_size,name="input_layer");

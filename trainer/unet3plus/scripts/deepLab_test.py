@@ -7,11 +7,20 @@ os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0/b
 import tensorflow as tf
 from tensorflow_datasets.core.features.image_feature import cv2
 import numpy as np
+from common.data_loader import load_instances_coco_format_all
 
-h5_path = '../checkpoints/PoledeeplabV3plus_export.weights.h5'
-images_dir = '../data/champions_league/dataset_pole/images/'
-json_path = '../data/champions_league/dataset_pole/instances_default.json'
+h5_path = '../checkpoints/0602InstanceDeeplabV3plus_export.weights.h5'
+images_dir = '../data/images/'
+json_path = '../data/annotations/instances_default.json'
+
 input_size = (512, 512)
+num_of_image = 100
+cat_id = 1
+threshold = 0.8
+batch_size = 3
+
+instance_images, instance_masks = load_instances_coco_format_all(images_dir, json_path, input_size, cat_id=cat_id,
+                                                                 num_of_image=num_of_image)
 
 coco = COCO(json_path)
 images = []
